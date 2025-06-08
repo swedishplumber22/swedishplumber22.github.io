@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bybit Live Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      color: #111111;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .price {
+      font-size: 18px;
+      margin: 5px 0;
+    }
+    .container {
+      max-width: 300px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Bybit Perpetuals (USDT)</h2>
+  <div class="container" id="prices">
+    Loading...
+  </div>
+
+  <script>
+    const symbols = ["BTCUSDT", "ETHUSDT", "PEPEUSDT", "DOGEUSDT", "LINKUSDT"];
+
+    async function fetchPrices() {
+      try {
+        const res = await fetch("https://api.bybit.com/v5/market/tickers?category=linear");
+        const data = await res.json();
+        const tickers = data.result.list;
+
+        let html = "";
+        for (let symbol of symbols) {
+          const ticker = tickers.find(t => t.symbol === symbol);
+          if (ticker) {
+            const price = parseFloat(ticker.lastPrice).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 8 });
+            html += `<div class="price">${symbol}: $${price}</div>`;
+          } else {
+            html += `<div class="price">${symbol}: N/A</div>`;
+          }
+        }
+        document.getElementById("prices").innerHTML = html;
+      } catch (err) {
+        console.error("Error fetching prices:", err);
+        document.getElementById("prices").innerText = "Failed to load prices.";
+      }
+    }
+
+    fetchPrices();
+    setInterval(fetchPrices, 10000); // Refresh every 10 seconds
+  </script>
+</body>
+</html>
