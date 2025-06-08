@@ -2,38 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bybit Live Tracker</title>
+  <title>Bybit Perpetual Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #ffffff;
-      color: #111111;
+      color: #111;
       text-align: center;
-      padding: 20px;
       margin: 0;
+      padding: 20px;
     }
     h2 {
       font-size: 20px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
-    .price {
-      font-size: 18px;
-      margin: 5px 0;
+    .price-entry {
+      font-size: 16px;
+      margin: 6px 0;
     }
-    .container {
-      max-width: 300px;
-      margin: 0 auto;
+    .green {
+      color: green;
+    }
+    .red {
+      color: red;
     }
   </style>
 </head>
 <body>
   <h2>Bybit Perpetuals (USDT)</h2>
-  <div class="container" id="prices">
-    Loading...
-  </div>
+  <div id="prices">Loading...</div>
 
   <script>
-    const symbols = ["BTCUSDT", "ETHUSDT", "1000PEPEUSDT", "DOGEUSDT", "LINKUSDT"];
+    const symbols = ["BTCUSDT", "ETHUSDT", "PEPEUSDT", "DOGEUSDT", "LINKUSDT"];
 
     async function fetchPrices() {
       try {
@@ -42,24 +42,32 @@
         const tickers = data.result.list;
 
         let html = "";
-        for (let symbol of symbols) {
+        for (const symbol of symbols) {
           const ticker = tickers.find(t => t.symbol === symbol);
           if (ticker) {
-            const price = parseFloat(ticker.lastPrice).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 8 });
-            html += `<div class="price">${symbol}: $${price}</div>`;
+            const last = parseFloat(ticker.lastPrice).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 8 });
+            const change = parseFloat(ticker.price24hPcnt) * 100;
+            const changeFormatted = change.toFixed(2) + "%";
+            const changeClass = change >= 0 ? "green" : "red";
+            html += `
+              <div class="price-entry">
+                <strong>${symbol}</strong>: $${last}
+                <span class="${changeClass}">(${changeFormatted})</span>
+              </div>
+            `;
           } else {
-            html += `<div class="price">${symbol}: N/A</div>`;
+            html += `<div class="price-entry">${symbol}: N/A</div>`;
           }
         }
         document.getElementById("prices").innerHTML = html;
       } catch (err) {
         console.error("Error fetching prices:", err);
-        document.getElementById("prices").innerText = "Failed to load prices.";
+        document.getElementById("prices").innerText = "Error loading prices.";
       }
     }
 
     fetchPrices();
-    setInterval(fetchPrices, 10000); // Refresh every 10 seconds
+    setInterval(fetchPrices, 1000); // Update every second
   </script>
 </body>
 </html>
